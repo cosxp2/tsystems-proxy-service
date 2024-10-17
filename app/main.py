@@ -1,31 +1,22 @@
+import io
 from fastapi import FastAPI, UploadFile, File, HTTPException
-from fastapi.responses import FileResponse
-from pathlib import Path
-import shutil 
+from fastapi.responses import StreamingResponse
+from app.s3_manager import S3Manager
 
 app = FastAPI()
+s3_manager = S3Manager()
 
-UPLOAD_DIR = Path("/tmp")
-
-if not UPLOAD_DIR.exists():
-    UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
-    
 @app.post("/upload/")
-async def upload_file(file_name: str, file: UploadFile = File(...)):
-    file_location = UPLOAD_DIR / file_name
-    
-    try:
-        with open(file_location, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"File upload failed: {e}")
-    
-    return {"message": f"File {file_name} uploaded successfully"}
+async def upload_file(bucket_name: str, file_name: str, file: UploadFile = File(...)):
+    res = s3_manager.upload_file(file.file, file_name, bucket_name)
+    if "error" in res:
+        raise HTTPException(status_code=400, detail=res["error"])
+    return res
 
 @app.get("/download/")
-async def download_file(file_name: str):
-    file_location = UPLOAD_DIR / file_name
+async def download_file(bucket_name: str, file_name: str):
+    file_data = s3_manager.download_file(file_name, bucket_name)
+    if isinstance(file_data, dict) and "error" in file_data:
+        raise HTTPException(status_code=400, detail=file_data["error"])
     
-    if not file_location.exists():
-        raise HTTPException(status_code=404, detail="File not found")
-    return FileResponse(file_location, media_type="application/octetstream", filename=file_name)
+    return StreamingResponse(io.BytesIO(file_data), media_type="applicaiton/octet-stream")
