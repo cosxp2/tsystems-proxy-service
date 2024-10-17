@@ -19,4 +19,4 @@ async def download_file(bucket_name: str, file_name: str):
     if isinstance(file_data, dict) and "error" in file_data:
         raise HTTPException(status_code=400, detail=file_data["error"])
     
-    return StreamingResponse(io.BytesIO(file_data), media_type="applicaiton/octet-stream")
+    return StreamingResponse(io.BytesIO(file_data), media_type="application/octet-stream")
