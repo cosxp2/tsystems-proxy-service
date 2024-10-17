@@ -7,6 +7,8 @@ verify_ssl = true
 fastapi = "*"
 uvicorn = "*"
 python-multipart = "*"
+boto3 = "*"
+python-dotenv = "*"
 
 [requires]
 python_version = "3.11"
