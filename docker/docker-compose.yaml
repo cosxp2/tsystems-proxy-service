@@ -3,7 +3,7 @@ services:
     build:
       context: ../
       dockerfile: docker/src/Dockerfile
-    container_name: tsystes-app
+    container_name: tsystems-app
     ports:
       - "8000:8000"
     volumes:
