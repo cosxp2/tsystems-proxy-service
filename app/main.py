@@ -17,6 +17,6 @@ async def upload_file(bucket_name: str, file_name: str, file: UploadFile = File(
 async def download_file(bucket_name: str, file_name: str):
     file_data = s3_manager.download_file(file_name, bucket_name)
     if isinstance(file_data, dict) and "error" in file_data:
-        raise HTTPException(status_code=400, detail=file_data["error"])
+        raise HTTPException(status_code=404, detail=file_data["error"])
     
     return StreamingResponse(io.BytesIO(file_data), media_type="application/octet-stream")
